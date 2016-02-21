@@ -10,6 +10,7 @@ public delegate void OnChangeMethod<T>(CharacteristicModificationData<T> data);
 public class Characteristic<T>
 {
     private T value;
+    private bool locked = false;
 
     /// <summary>
     /// called before the change actually applies.
@@ -31,23 +32,39 @@ public class Characteristic<T>
         return value;
     }
 
+    public bool isLocked()
+    {
+        return locked;
+    }
+
     /// <summary>
     /// calls OnChange, then i applies, then calls AfterChange.
+    /// if the characteristic is already being changed, this will throw an access violation exception.
     /// </summary>
     public void set(T val)
     {
+        if (locked)
+            throw new System.AccessViolationException("The characteristic was locked, have you tried to use set() from a event reciver?");
+
+        locked = true;
+
         CharacteristicModificationData<T> data = new CharacteristicModificationData<T>(this, val);
         if (OnChange != null)
         {
             OnChange(data);
             if (data.ignored) //ignoring the change has priority over other modifications.
+            {
+                locked = false;
                 return;
+            }
         }
         T oldValue = value;
         value = data.modifiableNewValue;
 
         if (AfterChange != null)
             AfterChange(this, oldValue);
+
+        locked = false;
     }
     /// <summary>
     /// no reason to show this outside of this file.
