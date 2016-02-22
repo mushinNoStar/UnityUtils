@@ -1,5 +1,5 @@
-﻿public delegate void characteristicChangedMethod<T>(Characteristic<T> chr, T oldValue);
-public delegate void OnChangeMethod<T>(CharacteristicModificationData<T> data);
+﻿private delegate void characteristicChangedMethod<T>(Characteristic<T> chr, T oldValue);
+private delegate void OnChangeMethod<T>(CharacteristicModificationData<T> data);
 
 /// <summary>
 /// A characteristic should be used as a wrap around of a int or a string.
