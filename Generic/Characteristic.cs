@@ -66,6 +66,15 @@ public class Characteristic<T>
 
         locked = false;
     }
+
+    /// <summary>
+    /// A characteristic should be behave as the T type.
+    /// </summary>
+    public static implicit operator T(Characteristic<T> characteristic)
+    {
+        return characteristic.value;
+    }
+
     /// <summary>
     /// no reason to show this outside of this file.
     /// </summary>
