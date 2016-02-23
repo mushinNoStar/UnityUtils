@@ -1,6 +1,7 @@
-﻿using InputHandler;
+﻿using UnityEngine;
+using System.Collections.Generic;
 
-namespace Plane
+namespace Geometry
 {
     namespace Internal
     {
@@ -8,9 +9,9 @@ namespace Plane
         /// This is the communication system between unity and the abstract plane area.
         /// 
         /// This is at the player level of abstraction, this class decide what the player actually see,
-        /// and what the player my want to do when he interact with the rappresentation.
+        /// and what the player my want to do when he interact with the actuall game object.
         /// </summary>
-        public class PlaneAreaRappresentation : ClickableInputReciver
+        public class PlaneAreaRappresentation
         {
             private PlaneArea area;
             private PlaneBehaviour planeBehaviour = null;
@@ -27,7 +28,10 @@ namespace Plane
                     planeBehaviour = PlaneBehaviour.loadOne();
                     planeBehaviour.OnClicked += clicked;
                     planeBehaviour.OnOver += over;
-                    planeBehaviour.setVertices(area.getOutermostVertices());
+                    List<Vector2> verts = new List<Vector2>();
+                    foreach (IVertex v in area.getOutermostVertices())
+                        verts.Add(v.get2dPosition());
+                    planeBehaviour.setVertices(verts);
                 }
             }
 
@@ -50,17 +54,22 @@ namespace Plane
             public void update()
             {
                 if (isVisible())
-                    planeBehaviour.setVertices(area.getOutermostVertices());
+                {
+                    List<Vector2> verts = new List<Vector2>();
+                    foreach (IVertex v in area.getOutermostVertices())
+                        verts.Add(v.get2dPosition());
+                    planeBehaviour.setVertices(verts);
+                }
             }
 
-            public void clicked(int mouseButton)
+            private void clicked(int mouseButton)
             {
-
+                Debug.Log("clicked");
             }
 
-            public void over()
+            private void over()
             {
-
+                
             }
         }
     }
