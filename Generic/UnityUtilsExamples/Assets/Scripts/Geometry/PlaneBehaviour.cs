@@ -26,6 +26,11 @@ namespace Geometry
             return gm.GetComponent<PlaneBehaviour>();
         }
 
+        public void setMaterial(Material mat)
+        {
+            GetComponent<MeshRenderer>().material = mat;
+        }
+
         /// <summary>
         /// Set the vertices of the plane, the vertices must be ordered first.
         /// Consecutive vertices will be connected to the center to make a triangle.

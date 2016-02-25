@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System;
 
 namespace Geometry
 {
@@ -10,37 +11,31 @@ namespace Geometry
             // Use this for initialization
             void Start()
             {
-                List<Vector2> vertices = new List<Vector2>();
-                for (int a = 0; a < 15; a++)
+                fullTest();
+            }
+
+            private void fullTest()
+            {
+                List<IVertex> tvertices = new List<IVertex>();
+                for (int a = 0; a < 50; a++)
                 {
-                    vertices.Add(new Vector2(Random.value * 10, Random.value * 10));
-                    
+                    tvertices.Add(new TestVertex(new Vector2(UnityEngine.Random.value * 10 - 5, UnityEngine.Random.value * 10 - 5)));
                 }
 
-                PlaneBehaviour b = PlaneBehaviour.loadOne();
-                b.setVertices(vertices);
-                b.transform.position = new Vector3(10,0,0);
+                Material m1 = new Material(Resources.Load<Material>("testMat"));
+                Material m2 = new Material(Resources.Load<Material>("testMat"));
+                m1.color = Color.red;
+                m2.color = Color.white;
 
-                List<IVertex> tvertices = new List<IVertex>();
-                foreach (Vector2 v in vertices)
-                    tvertices.Add(new TestVertex(v));
-                PlaneArea plnArea = new PlaneArea(tvertices);
+                OutlinedConvexArea plnArea = new OutlinedConvexArea(tvertices, m1, m2, 0.2f);
+                plnArea.show();
+                plnArea.hide();
                 plnArea.show();
 
-                foreach (IVertex v in plnArea.getVertices())
-                {
-                    GameObject gm = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    gm.transform.position = new Vector3(v.get2dPosition().x, v.get2dPosition().y, 0);
-                    gm.GetComponent<Renderer>().material.color = Color.red;
-                    gm.name = plnArea.getVertices().IndexOf(v) + "";
-                }
-            }
-
-            // Update is called once per frame
-            void Update()
-            {
+            
 
             }
+
         }
     }
 
@@ -50,16 +45,20 @@ namespace Geometry
         public TestVertex(Vector2 pos)
         {
             ps = pos;
+            GameObject gm = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            gm.transform.position = new Vector3(pos.x, pos.y, 0);
+            gm.GetComponent<Renderer>().material.color = Color.red;
+            
+        }
+
+        public TestVertex(float x, float y)
+        {
+            ps = new Vector2(x,y);
         }
 
         public Vector2 get2dPosition()
         {
             return ps;
-        }
-
-        public float getSlope(IVertex v)
-        {
-            return (get2dPosition().y - v.get2dPosition().y) / (get2dPosition().x - v.get2dPosition().x);
         }
 
     }

@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using Rappresentation;
+using System;
 
 namespace Geometry
 {
@@ -11,17 +13,17 @@ namespace Geometry
         /// This is at the player level of abstraction, this class decide what the player actually see,
         /// and what the player my want to do when he interact with the actuall game object.
         /// </summary>
-        public class PlaneAreaRappresentation
+        public class PlaneAreaRappresentation : RappresentatioObject
         {
             private PlaneArea area;
             private PlaneBehaviour planeBehaviour = null;
 
-            public PlaneAreaRappresentation(PlaneArea planeArea)
+            public PlaneAreaRappresentation(PlaneArea planeArea, Material mat) : base(mat)
             {
                 area = planeArea;
             }
 
-            public void show()
+            public override void show()
             {
                 if (!isVisible())
                 {
@@ -32,10 +34,11 @@ namespace Geometry
                     foreach (IVertex v in area.getOutermostVertices())
                         verts.Add(v.get2dPosition());
                     planeBehaviour.setVertices(verts);
+                    planeBehaviour.setMaterial(getRappresentationData().getMaterial());
                 }
             }
 
-            public void hide()
+            public override void hide()
             {
                 if (isVisible())
                 {
@@ -46,12 +49,12 @@ namespace Geometry
                 }
             }
 
-            public bool isVisible()
+            public override bool isVisible()
             {
                 return (planeBehaviour != null);
             }
 
-            public void update()
+            public override void update()
             {
                 if (isVisible())
                 {

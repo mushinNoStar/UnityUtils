@@ -5,5 +5,4 @@ using System;
 public interface IVertex
 {
     Vector2 get2dPosition();
-    float getSlope(IVertex otherVertex);
 }
