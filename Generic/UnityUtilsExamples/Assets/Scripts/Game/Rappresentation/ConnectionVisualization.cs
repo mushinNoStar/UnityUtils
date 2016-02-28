@@ -10,6 +10,7 @@ namespace Game
         private static List<ConnectionVisualization> vis = new List<ConnectionVisualization>();
         private int myNumber = -1;
         public readonly List<Vector2> extremes;
+        public bool visible = true;
 
         public ConnectionVisualization(Connection con) : base ()
         {
@@ -21,26 +22,31 @@ namespace Game
             myNumber = ConnectionBehaviour.getConnectionBehaviour().addSegment(extremes);
         }
 
+        public static List<ConnectionVisualization> getVisualization()
+        {
+            return vis;
+        }
 
         public override void hide()
         {
-            throw new NotImplementedException();
+            visible = false;
+            ConnectionBehaviour.getConnectionBehaviour().getMaterial(myNumber).color = (Color.clear);
         }
 
         public override bool isVisible()
         {
-            return false;
-            throw new NotImplementedException();
+            return visible;
         }
 
         public override void show()
         {
-            throw new NotImplementedException();
+            visible = true;
+            ConnectionBehaviour.getConnectionBehaviour().getMaterial(myNumber).color = Color.blue;
         }
 
         public override void update()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
     }
 }

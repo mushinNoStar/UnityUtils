@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using ceometric.DelaunayTriangulator;
 using UnityEngine;
 using Vision;
+using ceometric;
 
 namespace Game
 {
@@ -15,6 +16,7 @@ namespace Game
         private List<Point> points = null;
         private List<Vector2> extremes = new List<Vector2>();
         private int myNumber = -1;
+        private bool visisble = true;
 
         public SectorVisualization(Sector targetSector) : base()
         {
@@ -22,7 +24,19 @@ namespace Game
             vis.Add(this);
             generateExtremes();
 
-            myNumber = SectorBehaviour.getSectorBehaviour().addSector(extremes);
+            myNumber = SectorBehaviour.getSectorBehaviour().addSector(extremes, sector.get2dPosition());
+            SectorBehaviour.getSectorBehaviour().OnClicked += clicked;
+        }
+
+        public static List<SectorVisualization> getVisualizations()
+        {
+            return vis;
+        }
+
+        public void clicked(int num)
+        {
+            if (myNumber == num)
+                SelectionManger.select(this);
         }
 
         public ReadOnlyCollection<SectorVisualization> getSectorsVisualizations()
@@ -32,23 +46,26 @@ namespace Game
 
         public override void hide()
         {
-            throw new NotImplementedException();
+            visisble = false;
+            SectorBehaviour.getSectorBehaviour().getAreaMaterial(myNumber).color = Color.clear;
+            SectorBehaviour.getSectorBehaviour().getBorderMaterial(myNumber).color = Color.clear;
         }
 
         public override bool isVisible()
         {
-            //throw new NotImplementedException();
-            return false;
+            return visisble;
         }
 
         public override void show()
         {
-            throw new NotImplementedException();
+            visisble = true;
+            SectorBehaviour.getSectorBehaviour().getAreaMaterial(myNumber).color = Color.cyan;
+            SectorBehaviour.getSectorBehaviour().getBorderMaterial(myNumber).color = getColor();
         }
 
         public override void update()
         {
-            throw new NotImplementedException();
+           // throw new NotImplementedException();
         }
 
         private List<Triangle> getTriangulation()
@@ -71,8 +88,8 @@ namespace Game
 
                 float f = gl.generationParam.galaxyEdge;
                 points.Add(new Point(f, f, 0));
-                points.Add(new Point(-1*f, f, 0));
-                points.Add(new Point(-1 * f,-1* f, 0));
+                points.Add(new Point(-1 * f, f, 0));
+                points.Add(new Point(-1 * f, -1 * f, 0));
                 points.Add(new Point(f, -1 * f, 0));
 
 
@@ -83,7 +100,7 @@ namespace Game
         private void generateExtremes()
         {
             int index = sector.galaxy.getSectors().IndexOf(sector);
-            
+
             Point v = getPoints()[index];
 
             List<Triangle> nearTris = new List<Triangle>();
@@ -93,12 +110,12 @@ namespace Game
                     nearTris.Add(t);
             }
 
-  
+
             if (nearTris.Count > 2)
             {
                 foreach (Triangle t in nearTris)
                     extremes.Add(new Vector2(t.getCenter().x, t.getCenter().y));
-               
+
             }
             extremes = Tools.Utils.sort2d(extremes);
 
@@ -106,12 +123,17 @@ namespace Game
 
         public void OnSelectStart()
         {
-            throw new NotImplementedException();
+            SectorBehaviour.getSectorBehaviour().getAreaMaterial(myNumber).color = Color.yellow;
         }
 
         public void OnSelectEnd()
         {
-            throw new NotImplementedException();
+            SectorBehaviour.getSectorBehaviour().getAreaMaterial(myNumber).color = getColor();
+        }
+
+        public Color getColor()
+        {
+            return Color.blue;
         }
     }
 }

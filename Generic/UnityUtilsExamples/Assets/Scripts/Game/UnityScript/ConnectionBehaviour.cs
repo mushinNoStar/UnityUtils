@@ -27,6 +27,11 @@ namespace Game
             return scb;
         }
 
+        public Material getMaterial(int num)
+        {
+            return GetComponent<MeshRenderer>().sharedMaterials[num];
+        }
+
         public int addSegment(List<Vector2> vectors, float width = 0.02f)
         {
             MeshFilter filter = GetComponent<MeshFilter>();
@@ -44,9 +49,8 @@ namespace Game
             foreach (Material m in rend.sharedMaterials)
                 mat.Add(m);
             mat.Add(new Material(mat[0]));
-            mat.Add(new Material(mat[0]));
 
-            while (mat.Count > subMeshTarget + 2)
+            while (mat.Count > subMeshTarget + 1)
                 mat.RemoveAt(0);
 
             rend.sharedMaterials = mat.ToArray();

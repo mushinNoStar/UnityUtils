@@ -32,6 +32,13 @@ namespace Game
             newScene.OnStart();
         }
 
+        public void setScene()
+        {
+            if (currentScene != null)
+                currentScene.OnEnd();
+            currentScene = null;
+        }
+
         private void tick()
         {
             if (currentScene != null)

@@ -11,6 +11,7 @@ namespace Game
         private static SectorBehaviour scb;
         private List<List<Vector2>> listOfSectorsExtremes = new List<List<Vector2>>();
         private List<Vector2> listOfCenters = new List<Vector2>();
+        private List<Vector2> voronoiPoints = new List<Vector2>();
 
         // Use this for initialization
         void Start()
@@ -26,19 +27,28 @@ namespace Game
             return scb;
         }
 
+        public Material getAreaMaterial(int target)
+        {
+            return GetComponent<Renderer>().materials[target*2];
+        }
+
+        public Material getBorderMaterial(int target)
+        {
+            return GetComponent<Renderer>().materials[target * 2 + 1];
+        }
+
         // Update is called once per frame
         void Update()
         {
-            MeshFilter filter = GetComponent<MeshFilter>();
-            Mesh mesh = filter.sharedMesh;
         }
 
-        public int addSector(List<Vector2> extremes, float width = 0.02f)
+        public int addSector(List<Vector2> extremes, Vector2 voronoiPoint ,float width = 0.02f)
         {
             listOfSectorsExtremes.Add(extremes);
             MeshFilter filter = GetComponent<MeshFilter>();
             Mesh mesh = filter.sharedMesh;
 
+            voronoiPoints.Add(voronoiPoint);
             int subMeshTarget = mesh.subMeshCount;
             mesh.subMeshCount += 2;
             generateMainArea(extremes, subMeshTarget);
@@ -58,7 +68,7 @@ namespace Game
                 mat.RemoveAt(0);
 
             rend.sharedMaterials = mat.ToArray();
-            return subMeshTarget;
+            return subMeshTarget/2;
         }
 
         private void generateEdges(List<Vector2> extremes, int subMesh, float width, Mesh mesh)
@@ -206,11 +216,11 @@ namespace Game
                 float dist = 10000;
                 int target = 0;
                 Vector2 point = new Vector2(hit.point.x, hit.point.y);
-                for (int a = 0; a < listOfCenters.Count; a++)
+                for (int a = 0; a < voronoiPoints.Count; a++)
                 {
-                    if (Vector2.Distance(listOfCenters[a], point) < dist)
+                    if (Vector2.Distance(voronoiPoints[a], point) < dist)
                     {
-                        dist = Vector2.Distance(listOfCenters[a], point);
+                        dist = Vector2.Distance(voronoiPoints[a], point);
                         target = a;
                     }
                 }

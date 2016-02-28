@@ -5,7 +5,7 @@ namespace Game
 {
     public class GalaxyGenerationParameter
     {
-        public int numberOfSystems = 100;
+        public int numberOfSystems = 200;
         public int averageNumberOfStarInSector = 5;
         public int plusNumberOfStarInSector = 5;
         public int minusNumberOfStarInSector = 2;
