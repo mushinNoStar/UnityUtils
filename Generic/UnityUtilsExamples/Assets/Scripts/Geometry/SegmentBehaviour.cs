@@ -26,6 +26,11 @@ namespace Geometry
             return everySegment;
         }
 
+        public bool contains(IPlaneSegment seg)
+        {
+            return segments.Contains(seg);
+        }
+
         /// <summary>
         /// if you add an already present vertex, it is ignored
         /// </summary>
@@ -87,43 +92,24 @@ namespace Geometry
             }
             GetComponent<MeshRenderer>().sharedMaterials = materials.ToArray();
         }
-
-        /// <summary>
-        /// if you remove a segment that is not present, it is ignored
-        /// </summary>
-        /// <param name="segment"></param>
-        public void removeSegment(IPlaneSegment segment)
-        {
-            if (!segments.Contains(segment))
-                return;
-            materials.RemoveAt(segments.IndexOf(segment));
-            segments.Remove(segment);
-            recalculate();
-        }
-
-        public bool contains(IPlaneSegment segment)
-        {
-            return segments.Contains(segment);
-        }
-
+    
         /// <summary>
         /// don't use this too often.
         /// </summary>
         public void recalculate()
         {
-            Mesh currentMesh = new Mesh();
+            Mesh currentMesh = GetComponent<MeshFilter>().sharedMesh;
             List<Vector3> vertex = new List<Vector3>();
+            foreach (Vector3 v in currentMesh.vertices)
+                vertex.Add(v);
             currentMesh.subMeshCount = segments.Count;
-            foreach (IPlaneSegment seg in segments)
-            {
-                int subMeshPosition = segments.IndexOf(seg);
-                addTrisToList(currentMesh, seg, vertex, subMeshPosition);
-            }
+        
+            int subMeshPosition = segments.Count - 1;
+                addTrisToList(currentMesh, segments[segments.Count-1], vertex, subMeshPosition);
+            
 
             currentMesh.SetVertices(vertex);
-            foreach (IPlaneSegment seg in segments)
-            {
-                int subMeshPosition = segments.IndexOf(seg);
+           
                 int[] triangles = new int[6];
                 triangles[0] = 0 + (subMeshPosition * 4);
                 triangles[1] = 1 + (subMeshPosition * 4);
@@ -133,12 +119,15 @@ namespace Geometry
                 triangles[5] = 3 + (subMeshPosition * 4);
 
                 currentMesh.SetTriangles(triangles, subMeshPosition);
-            }
+         
             currentMesh.name = "new mesh";
+            currentMesh.RecalculateNormals();
+
             GetComponent<MeshCollider>().sharedMesh = currentMesh;
             GetComponent<MeshFilter>().sharedMesh = currentMesh;
 
             GetComponent<MeshRenderer>().sharedMaterials = materials.ToArray();
+            
         }
 
         private void addTrisToList(Mesh mesh, IPlaneSegment seg,List<Vector3> verts,int subMeshPosition)
@@ -156,15 +145,15 @@ namespace Geometry
             orthogonalVector = (seg.getWidth() / 2) * orthogonalVector.normalized;
 
             List<Vector2> planePoints = new List<Vector2>();
-            planePoints.Add(seg.getStartingPoint().get2dPosition() - orthogonalVector);
-            planePoints.Add(seg.getStartingPoint().get2dPosition() + orthogonalVector);
-            planePoints.Add(seg.getEndingPoint().get2dPosition() - orthogonalVector);
-            planePoints.Add(seg.getEndingPoint().get2dPosition() + orthogonalVector);
+            planePoints.Add(seg.getStartingPoint().get2dPosition() - (orthogonalVector));
+            planePoints.Add(seg.getStartingPoint().get2dPosition() + ((1 - seg.getOffset()) * orthogonalVector));
+            planePoints.Add(seg.getEndingPoint().get2dPosition() - ( orthogonalVector));
+            planePoints.Add(seg.getEndingPoint().get2dPosition() + ((1 - seg.getOffset()) * orthogonalVector));
             planePoints = Utils.sort2d(planePoints);
 
             foreach (Vector2 v in planePoints)
             {
-                Vector3 vec = new Vector3(v.x, v.y, 0);
+                Vector3 vec = new Vector3(v.x, v.y, -0.0001f);
                 verts.Add(vec);
             }
 

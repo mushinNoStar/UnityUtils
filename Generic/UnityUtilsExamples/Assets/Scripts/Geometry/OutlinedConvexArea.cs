@@ -20,6 +20,18 @@ namespace Geometry
             generateBorders(segMat);
         }
 
+        public bool contains(IVertex v)
+        {
+            if (area.getVertices().Contains(v))
+                return true;
+            return false;
+        }
+
+        public PlaneArea getArea()
+        {
+            return area;
+        }
+
         public IRappresentation getRappresentation()
         {
             return ((IRappresentable)area).getRappresentation();
@@ -62,17 +74,23 @@ namespace Geometry
 
         private void generateBorders(Material bordersMaterial)
         {
+           
             segments.Clear();
             for (int a = 0; a < area.getOutermostVertices().Count -1; a++)
             {
                 IVertex v1 = area.getOutermostVertices()[a];
                 IVertex v2 = area.getOutermostVertices()[a + 1];
-                PlaneSegment sgm = new PlaneSegment(v1, v2, borderWidth, bordersMaterial);
+                PlaneSegment sgm;
+                sgm = new PlaneSegment(v1, v2, borderWidth, bordersMaterial);
+               
+
                 segments.Add(sgm);
             }
             IVertex v3 = area.getOutermostVertices()[0];
             IVertex v4 = area.getOutermostVertices()[area.getOutermostVertices().Count-1];
-            PlaneSegment asd = new PlaneSegment(v3, v4, borderWidth, bordersMaterial);
+            PlaneSegment asd;
+           
+                asd = new PlaneSegment(v3, v4, borderWidth, bordersMaterial);
             segments.Add(asd);
         }
 

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Rappresentation
 {
-    public class RappresentatioObject : IRappresentation
+    public abstract class RappresentatioObject : IRappresentation
     {
         private RappresentationData rappresentationData;
 
@@ -17,15 +17,9 @@ namespace Rappresentation
             return rappresentationData;
         }
 
-        public virtual void hide()
-        {
+        public abstract void hide();
 
-        }
-
-        public virtual bool isVisible()
-        {
-            return false;
-        }
+        public abstract bool isVisible();
 
         public void setRappresentationData(RappresentationData data)
         {
@@ -33,14 +27,21 @@ namespace Rappresentation
             update();
         }
 
-        public virtual void show()
-        {
-
-        }
+        public abstract void show();
 
         public virtual void update()
         {
 
+        }
+
+        public void clicked(int mouseButton)
+        {
+            rappresentationData.clicked(mouseButton);
+        }
+
+        public void over()
+        {
+            rappresentationData.over();
         }
     }
 }

@@ -17,6 +17,7 @@ namespace Geometry
         {
             private PlaneArea area;
             private PlaneBehaviour planeBehaviour = null;
+            private int num = -1;
 
             public PlaneAreaRappresentation(PlaneArea planeArea, Material mat) : base(mat)
             {
@@ -30,11 +31,18 @@ namespace Geometry
                     planeBehaviour = PlaneBehaviour.loadOne();
                     planeBehaviour.OnClicked += clicked;
                     planeBehaviour.OnOver += over;
-                    List<Vector2> verts = new List<Vector2>();
-                    foreach (IVertex v in area.getOutermostVertices())
-                        verts.Add(v.get2dPosition());
-                    planeBehaviour.setVertices(verts);
-                    planeBehaviour.setMaterial(getRappresentationData().getMaterial());
+
+                    if (num == -1)
+                    {
+                        List<Vector2> verts = new List<Vector2>();
+                        foreach (IVertex v in area.getOutermostVertices())
+                            verts.Add(v.get2dPosition());
+                        num = planeBehaviour.getMyNumber(this);
+                        planeBehaviour.setVertices(verts, num);
+                        planeBehaviour.setMaterial(getRappresentationData().getMaterial(), num);
+                    }
+                    else
+                        planeBehaviour.setMaterial(getRappresentationData().getMaterial(), num);
                 }
             }
 
@@ -44,7 +52,12 @@ namespace Geometry
                 {
                     planeBehaviour.OnClicked -= clicked;
                     planeBehaviour.OnOver -= over;
-                    planeBehaviour.remove();
+
+                    //planeBehaviour.remove(num);
+                    Material m = new Material(getRappresentationData().getMaterial());
+                   
+                    m.color = Color.clear;
+                    planeBehaviour.setMaterial(m, num);
                     planeBehaviour = null;
                 }
             }
@@ -61,19 +74,27 @@ namespace Geometry
                     List<Vector2> verts = new List<Vector2>();
                     foreach (IVertex v in area.getOutermostVertices())
                         verts.Add(v.get2dPosition());
-                    planeBehaviour.setVertices(verts);
+                    int num = planeBehaviour.getMyNumber(this);
+
+                    planeBehaviour.remove(num);
+                    planeBehaviour.setVertices(verts, num);
                 }
             }
 
-            private void clicked(int mouseButton)
+            private void clicked(int mouseButton, int target)
             {
-                Debug.Log("clicked");
+
+                if (target == num)
+                    clicked(mouseButton);
             }
 
-            private void over()
+            private void over(int target)
             {
-                
+                if (target == num)
+                    over();
             }
+
+            
         }
     }
 }

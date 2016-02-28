@@ -45,6 +45,8 @@ namespace Geometry
             }
         }
 
+        
+
         public void addVertex(IVertex vertex)
         {
             if (!vertices.Contains(vertex))
@@ -132,11 +134,23 @@ namespace Geometry
         /// <param name="v2"></param>
         /// <param name="v3"></param>
         /// <returns></returns>
-        private bool isLeftTurn(IVertex v1, IVertex v2, IVertex v3)
+        public static bool isLeftTurn(IVertex v1, IVertex v2, IVertex v3)
         {
             float[] x = new float[3] {v2.get2dPosition().x, v1.get2dPosition().x, v3.get2dPosition().x };
             float[] y = new float[3] {v2.get2dPosition().y, v1.get2dPosition().y, v3.get2dPosition().y };
             float val = ((x[1]-x[0]) * (y[2]-y[0])) - ((y[1]-y[0]) * (x[2]-x[0])); //cross product of the
+
+            if (val > 0)
+                return true;
+            else
+                return false;
+        }
+
+        public static bool isLeftTurn(UnityEngine.Vector2 v1, UnityEngine.Vector2 v2, UnityEngine.Vector2 v3)
+        {
+            float[] x = new float[3] { v2.x, v1.x, v3.x };
+            float[] y = new float[3] { v2.y, v1.y, v3.y };
+            float val = ((x[1] - x[0]) * (y[2] - y[0])) - ((y[1] - y[0]) * (x[2] - x[0])); //cross product of the
 
             if (val > 0)
                 return true;

@@ -6,5 +6,6 @@ namespace Geometry
         IVertex getStartingPoint();
         IVertex getEndingPoint();
         float getWidth();
+        float getOffset();
     }
 }
