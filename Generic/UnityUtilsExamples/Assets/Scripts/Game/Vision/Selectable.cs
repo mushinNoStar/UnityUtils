@@ -1,53 +1,47 @@
-﻿namespace Vision
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
+
+namespace Vision
 {
-    /* public abstract class Selectable : ISelectable
-     {
-         private static Selectable selected;
-
-         public virtual void selectThis()
-         {
-             if (selected != null)
-                 selected.OnSelectEnd();
-             selected = this;
-             OnSelectStart();
-         }
-
-         public static void setSelectNull()
-         {
-             if (selected != null)
-                 selected.OnSelectEnd();
-             selected = null;
-         }
-
-         protected abstract void OnSelectStart();
-         protected abstract void OnSelectEnd();
-     }*/
-
+    /// <summary>
+    /// keeps track of what the player is trying to select.
+    /// </summary>
     public class SelectionManger
     {
-        private static ISelectable selected;
+        private static List<ISelectable> selected = new List<ISelectable>();
 
         public static void select(ISelectable selectable)
         {
-            if (selected != null)
-                selected.OnSelectEnd();
-            selected = selectable;
+            foreach (ISelectable s in selected)
+                s.OnSelectEnd();
+            selected.Clear();
+            selected.Add(selectable);
+            selectable.OnSelectStart();
+        }
+
+        public static void addSelected(ISelectable selectable)
+        {
+            selected.Add(selectable);
             selectable.OnSelectStart();
         }
 
         public static void setSelectNull()
         {
-            if (selected != null)
-                selected.OnSelectEnd();
-            selected = null;
+            foreach (ISelectable s in selected)
+                s.OnSelectEnd();
+            selected.Clear();
         }
 
-        public static ISelectable getCurrentSelected()
+        public static ReadOnlyCollection<ISelectable> getCurrentSelected()
         {
-            return selected;
+            return selected.AsReadOnly();
         }
     }
 
+    /// <summary>
+    /// a class that implement this interface can be selected.
+    /// the two function will be called.
+    /// </summary>
     public interface ISelectable
     {
         void OnSelectStart();

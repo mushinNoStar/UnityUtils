@@ -4,10 +4,19 @@ using System.Collections.Generic;
 
 namespace Game
 {
-    public delegate void intMethod(int num);
+    public delegate void mouseClickMethod(int num, bool shift, int mouseButton);
+    /// <summary>
+    /// sector behaviour is the class that rappresent every sector in the screen.
+    /// use add new sector to create the area on the screen.
+    /// use the number that add sector returns to access the material.
+    /// subscribe to on clicked to be notified when the player clicks on a particular object.
+    /// </summary>
     public class SectorBehaviour : MonoBehaviour
     {
-        public event intMethod OnClicked;
+        /// <summary>
+        /// called when the player clicks on a sector.
+        /// </summary>
+        public event mouseClickMethod OnClicked;
         private static SectorBehaviour scb;
         private List<List<Vector2>> listOfSectorsExtremes = new List<List<Vector2>>();
         private List<Vector2> listOfCenters = new List<Vector2>();
@@ -26,42 +35,54 @@ namespace Game
         {
             return scb;
         }
-
+        /// <summary>
+        /// returns the material associated at a particular sector.
+        /// </summary>
+        /// <param name="target"></param>
+        /// <returns></returns>
         public Material getAreaMaterial(int target)
         {
             return GetComponent<Renderer>().materials[target*2];
         }
 
+        /// <summary>
+        /// returns the material associated at a particular borders of a sector.
+        /// </summary>
+        /// <param name="target"></param>
+        /// <returns></returns>
         public Material getBorderMaterial(int target)
         {
             return GetComponent<Renderer>().materials[target * 2 + 1];
         }
 
-        // Update is called once per frame
-        void Update()
-        {
-        }
-
-        public int addSector(List<Vector2> extremes, Vector2 voronoiPoint ,float width = 0.02f)
+        /// <summary>
+        /// creates a new figure using the extremes given.
+        /// extremes must be ordered.
+        /// </summary>
+        /// <param name="extremes">extremes must be ordered</param>
+        /// <param name="voronoiPoint">it is the point used to determin if clicks belong to this sectors</param>
+        /// <param name="width"></param>
+        /// <returns></returns>
+        public int addSector(List<Vector2> extremes, Vector2 voronoiPoint ,float width = 0.01f)
         {
             listOfSectorsExtremes.Add(extremes);
             MeshFilter filter = GetComponent<MeshFilter>();
-            Mesh mesh = filter.sharedMesh;
+            Mesh mesh = filter.sharedMesh; //finds the mesh
 
             voronoiPoints.Add(voronoiPoint);
-            int subMeshTarget = mesh.subMeshCount;
-            mesh.subMeshCount += 2;
+            int subMeshTarget = mesh.subMeshCount; //find target mesh
+            mesh.subMeshCount += 2;//increase maximum submeshes
             generateMainArea(extremes, subMeshTarget);
             generateEdges(extremes, subMeshTarget + 1, width, mesh);
 
             filter.sharedMesh = mesh;
             recalculateNormalAndUv();
 
-            MeshRenderer rend = GetComponent<MeshRenderer>();
+            MeshRenderer rend = GetComponent<MeshRenderer>(); 
             List<Material> mat = new List<Material>();
             foreach (Material m in rend.sharedMaterials)
                 mat.Add(m);
-            mat.Add(new Material(mat[0]));
+            mat.Add(new Material(mat[0])); //set the materials for the 2 new sub meshes
             mat.Add(new Material(mat[0]));
 
             while (mat.Count > subMeshTarget + 2)
@@ -73,7 +94,7 @@ namespace Game
 
         private void generateEdges(List<Vector2> extremes, int subMesh, float width, Mesh mesh)
         {
-            List<Vector3> allVerts = new List<Vector3>();
+            List<Vector3> allVerts = new List<Vector3>(); //look in to connection behaviour, it's the same
             foreach (Vector3 v in mesh.vertices)
                 allVerts.Add(v);
             List<int> tris = new List<int>();
@@ -139,7 +160,7 @@ namespace Game
             Vector2 center = Vector2.zero;
             foreach (Vector2 v in extremes)
             {
-                center += v;
+                center += v; //finds the center of the figure.
             }
             center = center / extremes.Count;
             listOfCenters.Add(center);
@@ -148,18 +169,24 @@ namespace Game
             List<int> tris = getTris(extremes, center, currentNumberOfVertex + 1); //plus one because the center will go first.
             List<Vector3> vertices = new List<Vector3>();
 
-            foreach (Vector3 v in mesh.vertices)
+            foreach (Vector3 v in mesh.vertices) //add every known vertices to the list of new vertices
                 vertices.Add(v);
             vertices.Add(center);
             foreach (Vector3 ext in extremes)
                 vertices.Add(ext);
 
-            mesh.SetVertices(vertices);
-            mesh.SetTriangles(tris.ToArray(), subMesh);
+            mesh.SetVertices(vertices); //reset vertices
+            mesh.SetTriangles(tris.ToArray(), subMesh); //reset triangles
 
 
         }
-
+        /// <summary>
+        /// return the tris that compone this area
+        /// </summary>
+        /// <param name="extremes"></param>
+        /// <param name="center"></param>
+        /// <param name="currNumberOfVertex"></param>
+        /// <returns></returns>
         private List<int> getTris(List<Vector2> extremes, Vector2 center, int currNumberOfVertex)
         {
             List<int> diRItorno = new List<int>();
@@ -202,8 +229,16 @@ namespace Game
 
         void OnMouseDown()
         {
+            bool shift = false;
+            if (Input.GetKey(KeyCode.LeftShift))
+                shift = true;
+
+            int rightClick = 0;
+            if (Input.GetMouseButtonDown(2))
+                rightClick = 2;
+
             if (OnClicked != null)
-                OnClicked(getMeshOver());
+                OnClicked(getMeshOver(), shift, rightClick);
         }
 
         private int getMeshOver()
@@ -215,7 +250,7 @@ namespace Game
 
                 float dist = 10000;
                 int target = 0;
-                Vector2 point = new Vector2(hit.point.x, hit.point.y);
+                Vector2 point = new Vector2(hit.point.x, hit.point.y); //by definition, a point is in the area if the voronoi point is the closest.
                 for (int a = 0; a < voronoiPoints.Count; a++)
                 {
                     if (Vector2.Distance(voronoiPoints[a], point) < dist)

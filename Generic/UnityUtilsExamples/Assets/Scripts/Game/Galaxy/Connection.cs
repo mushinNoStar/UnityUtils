@@ -6,10 +6,10 @@ namespace Game
     public class Connection
     {
         public readonly ReadOnlyCollection<Sector> sectors;
-        public readonly int connectionValue = 0;
+        private int connectionValue = 0;
         public readonly Galaxy galaxy;
 
-        public Connection(Galaxy gal, Sector s1, Sector s2, int value = 0)
+        public Connection(Galaxy gal, Sector s1, Sector s2)
         {
             galaxy = gal;
             foreach (Connection cn in s1.getConnections())
@@ -22,10 +22,22 @@ namespace Game
             List<Sector> sec = new List<Sector>();
             sec.Add(s1);
             sec.Add(s2);
+            s1.addConnection(this);
+            s2.addConnection(this);
             sectors = sec.AsReadOnly();
-            connectionValue = value;
         }
-        
+
+        public void setConnectionValue(int val)
+        {
+            connectionValue = val;
+        }
+
+        public int getConnectionLevel()
+        {
+            return connectionValue;
+        }
+
+
         public void checkConsistency()
         {
             foreach (Sector sc in sectors)

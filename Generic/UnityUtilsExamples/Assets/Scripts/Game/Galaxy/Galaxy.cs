@@ -7,11 +7,17 @@ using ceometric;
 
 namespace Game
 {
+    /// <summary>
+    /// this should contains every data related to game mechanics, except for Actions.
+    /// </summary>
     public class Galaxy
     {
         private List<Sector> sectors = new List<Sector>();
         private List<Connection> connections = new List<Connection>();
         public GalaxyGenerationParameter generationParam;
+
+        public List<Vector2> structureList = new List<Vector2>();
+        public List<string> strctureName = new List<string>();
 
         public ReadOnlyCollection<Sector> getSectors()
         {
@@ -43,39 +49,41 @@ namespace Game
 
             for (int a = 0; a < extremes.Count; a += 2)
             {
+
                 Sector sc = sectors[extremes[a]];
                 Sector sc2 = sectors[extremes[a + 1]];
                 Connection cn = new Connection(this,sc, sc2);
                 connections.Add(cn);
+                sc2.addNeighbour(sc);
+                sc.addNeighbour(sc2);
             }
         }
 
-        public void generate(GalaxyGenerationParameter param)
+        public void generateStructure(List<Vector2> galaxyStructure, List<string> names)
         {
-            generationParam = param;
-            //throw new System.Exception("not implemented");
 
             List<IVertex> verts = new List<IVertex>();
-            for (int a = 0; a < param.numberOfSystems; a++)
+            foreach (Vector2 vc in galaxyStructure)
             {
-                float x = Random.value * param.galaxyEdge - (param.galaxyEdge / 2);
-                float y = Random.value * param.galaxyEdge - (param.galaxyEdge / 2);
-                Vector2 vec = new Vector2(x,y);
-                Sector sc = new Sector(this, vec, Tools.Utils.randomName());
+                Sector sc = new Sector(this, vc, names[galaxyStructure.IndexOf(vc)]);
                 sectors.Add(sc);
                 verts.Add(sc);
             }
+            structureList = galaxyStructure;
+            strctureName = names; 
 
             generateConnections();
+            Debug.Log("generated " + sectors.Count + " sectors, " + connections.Count + " connections");
 
-            Debug.Log("generated " + sectors.Count + " sectors, " + connections.Count+" connections");
-           /* foreach (Connection c in connections)
-            {
-                Vector3 start = new Vector3(c.sectors[0].get2dPosition().x, c.sectors[0].get2dPosition().y);
-                Vector3 end = new Vector3(c.sectors[1].get2dPosition().x, c.sectors[1].get2dPosition().y);
+        }
 
-                Debug.DrawLine(start, end, Color.red, 10);
-            }*/
+        public void generateGalaxyData(GalaxyGenerationParameter prm)
+        {
+            generationParam = prm;
+            foreach (Connection cn in connections)
+                cn.setConnectionValue(Mathf.FloorToInt(Random.value * 4));
+            Nation nt = new Nation("Humans", this, Color.green);
+            nt.setOwnedSector(sectors[0]);
         }
 
         public void checkConsistency()

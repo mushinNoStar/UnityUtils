@@ -8,10 +8,14 @@ namespace Tools
 {
     public class Utils
     {
+        /// <summary>
+        /// returns a random string of at best 9 letter
+        /// </summary>
+        /// <returns></returns>
         public static string randomName()
         {
             string name = "";
-            for (int a = 0; a < UnityEngine.Random.value * 9; a++)
+            for (int a = 0; a < UnityEngine.Random.value * 4 + 5; a++)
             {
                 if (a % 2 == 0)
                     name += randomNotVocal();
@@ -32,6 +36,14 @@ namespace Tools
             return str[Mathf.FloorToInt(UnityEngine.Random.value * str.Length)];
         }
 
+        /// <summary>
+        /// takes points and triangles and return a list of int, where every int point at
+        /// a point in the list. the ints are couples of indices that point at a segment.
+        /// every segment is unique.
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="tris"></param>
+        /// <returns></returns>
         public static List<int> transformInToListOfUniqueVectors(List<Point> points, List<Triangle> tris)
         {
             List<int> segs = new List<int>();
@@ -61,16 +73,29 @@ namespace Tools
                 }
             }
             return segs;
-
-            /*for (int a = 0; a < segs.Count; a += 2)
-            {
-                IVertex v = vertx[segs[a]];
-                IVertex v2 = vertx[segs[a + 1]];
-                if (boundArea.getArea().getVertices().Contains(v) || boundArea.getArea().getVertices().Contains(v2))
-                    continue;
-                segments.Add(new PlaneSegment(v, v2, segmentsWidth, new Material(segmentsMaterial)));
-            }*/
         }
+
+        public static string uniteList(List<string> ls)
+        {
+            string diRitorno = "";
+            foreach (string s in ls)
+            {
+                diRitorno += s;
+                diRitorno += "§";
+            }
+            return diRitorno;
+        }
+
+        public static List<string> splitList(string str)
+        {
+            string[] srts = str.Split('§');
+            List<string> diRitorno = new List<string>();
+            foreach (string s in srts)
+                if (s != "§" && s.Length != 0)
+                    diRitorno.Add(s);
+            return diRitorno;
+        }
+
 
         private static bool areSameCouple(int a, int a2, int b, int b2)
         {
@@ -178,6 +203,12 @@ namespace Tools
             return sortedVertex;
         }
 
+        /// <summary>
+        /// return the (y1-y2/x1-x2)
+        /// </summary>
+        /// <param name="v1"></param>
+        /// <param name="v2"></param>
+        /// <returns></returns>
         public static float getSlope(Vector3 v1, Vector3 v2)
         {
             return (v1.y - v2.y) / (v1.x - v2.x);

@@ -1,73 +1,135 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using ceometric.DelaunayTriangulator;
 using UnityEngine;
 using Vision;
 using ceometric;
+using UnityEngine.UI;
 
 namespace Game
 {
+    /// <summary>
+    /// this class should handle what the player see of a sector, what the player is trying to do when clicking around
+    /// a sector visualization is selectable as well.
+    /// </summary>
     public class SectorVisualization : Visualization, ISelectable
     {
         public readonly Sector sector;
         private static List<SectorVisualization> vis = new List<SectorVisualization>();
         private List<Triangle> trs = null;
         private List<Point> points = null;
-        private List<Vector2> extremes = new List<Vector2>();
+        private List<Vector2> extremes = new List<Vector2>(); //the point around this sectors.
         private int myNumber = -1;
         private bool visisble = true;
+        private SectorClone previousKnowIntel;
+        private SectorClone lastKnownIntels;
+        private GameObject gm;
 
-        public SectorVisualization(Sector targetSector) : base()
+        public SectorVisualization(Sector targetSector, Player observingPlayer) : base()
         {
-            sector = targetSector;
+            gm = GameObject.Instantiate(Resources.Load<GameObject>("Text")); //create the name on the screem
+            gm.transform.SetParent(FloatingCanvas.canvas.gameObject.transform, false);
+            gm.GetComponent<Text>().text = targetSector.getName();
+            gm.GetComponent<RectTransform>().anchoredPosition3D = targetSector.get2dPosition() + new Vector2(0,0.2f);
+            gm.GetComponent<RectTransform>().sizeDelta = new Vector3(1.4f, 0.4f);
+
+            sector = targetSector; //generate the extremes of this sector
             vis.Add(this);
             generateExtremes();
 
             myNumber = SectorBehaviour.getSectorBehaviour().addSector(extremes, sector.get2dPosition());
             SectorBehaviour.getSectorBehaviour().OnClicked += clicked;
+
+            lastKnownIntels = new SectorClone(sector,observingPlayer);
+            previousKnowIntel = null;
+            setLastIntel();
         }
 
-        public static List<SectorVisualization> getVisualizations()
+        /// <summary>
+        /// when clicked, the player is trying to select it.
+        /// </summary>
+        /// <param name="num"></param>
+        private void clicked(int num, bool shift, int mouseButton)
         {
-            return vis;
+            if (!lastKnownIntels.isKnown)
+                return;
+
+            if (mouseButton == 0)
+            {
+                if (shift)
+                {
+                    if (myNumber == num && isVisible())
+                        SelectionManger.addSelected(this);
+                }
+                else
+                {
+                    if (myNumber == num && isVisible())
+                        SelectionManger.select(this);
+                }
+            }
         }
 
-        public void clicked(int num)
-        {
-            if (myNumber == num)
-                SelectionManger.select(this);
-        }
-
-        public ReadOnlyCollection<SectorVisualization> getSectorsVisualizations()
+        /// <summary>
+        /// returns every sector visualization instantiated
+        /// </summary>
+        /// <returns></returns>
+        public static ReadOnlyCollection<SectorVisualization> getVisualizations()
         {
             return vis.AsReadOnly();
         }
 
+        /// <summary>
+        /// this sets the visualization invisble. this has nothing to do with the visibility rules
+        /// this is related to the scene managment.
+        /// </summary>
         public override void hide()
         {
             visisble = false;
             SectorBehaviour.getSectorBehaviour().getAreaMaterial(myNumber).color = Color.clear;
             SectorBehaviour.getSectorBehaviour().getBorderMaterial(myNumber).color = Color.clear;
+            gm.SetActive(false);
         }
 
+        /// <summary>
+        /// return if the sector is visible. this is related to the scene managment
+        /// you should check in the Sector class if you want to see if the players are allowed to see it.
+        /// </summary>
+        /// <returns></returns>
         public override bool isVisible()
         {
             return visisble;
         }
 
+        /// <summary>
+        /// this sets the visualization visible. this has nothing to do with the visibility rules
+        /// this is related to the scene managment.
+        /// </summary>
         public override void show()
         {
+            Color cl = Color.black;
+            cl.a = 0.7f;
+            SectorBehaviour.getSectorBehaviour().getAreaMaterial(myNumber).color = cl;
+            SectorBehaviour.getSectorBehaviour().getBorderMaterial(myNumber).color = Color.clear;
             visisble = true;
-            SectorBehaviour.getSectorBehaviour().getAreaMaterial(myNumber).color = Color.cyan;
-            SectorBehaviour.getSectorBehaviour().getBorderMaterial(myNumber).color = getColor();
+            setLastIntel();
+            
         }
 
+        /// <summary>
+        /// called every time this sector should be updated. related to the delay setting
+        /// </summary>
         public override void update()
         {
-           // throw new NotImplementedException();
+            previousKnowIntel = lastKnownIntels;
+            lastKnownIntels = new SectorClone(sector, Game.getGame().getRappresentation().getObservingPlayer());
+            setLastIntel();
+
         }
 
+        /// <summary>
+        /// this is used to understand how large a sector is in the screen.
+        /// </summary>
+        /// <returns></returns>
         private List<Triangle> getTriangulation()
         {
             if (trs == null)
@@ -77,6 +139,10 @@ namespace Game
             return trs;
         }
 
+        /// <summary>
+        /// returns the points of the hull of this sector.
+        /// </summary>
+        /// <returns></returns>
         private List<Point> getPoints()
         {
             if (points == null)
@@ -87,14 +153,20 @@ namespace Game
                     points.Add(new Point(v.get2dPosition().x, v.get2dPosition().y, 0));
 
                 float f = gl.generationParam.galaxyEdge;
-                points.Add(new Point(f, f, 0));
-                points.Add(new Point(-1 * f, f, 0));
-                points.Add(new Point(-1 * f, -1 * f, 0));
-                points.Add(new Point(f, -1 * f, 0));
+                points.Add(new Point(2*f, 2*f, 0)); //edges of the galaxy.
+                points.Add(new Point(-2 * f, 2*f, 0));
+                points.Add(new Point(-2 * f, -2 * f, 0));
+                points.Add(new Point(2*f, -2 * f, 0));
 
 
             }
             return points;
+        }
+
+
+        public ReadOnlyCollection<Vector2> getExtremes()
+        {
+            return extremes.AsReadOnly();
         }
 
         private void generateExtremes()
@@ -114,8 +186,10 @@ namespace Game
             if (nearTris.Count > 2)
             {
                 foreach (Triangle t in nearTris)
-                    extremes.Add(new Vector2(t.getCenter().x, t.getCenter().y));
-
+                {
+                    Vector2 extreme = new Vector2(t.getCenter().x, t.getCenter().y);
+                    extremes.Add(extreme);
+                }
             }
             extremes = Tools.Utils.sort2d(extremes);
 
@@ -123,17 +197,36 @@ namespace Game
 
         public void OnSelectStart()
         {
-            SectorBehaviour.getSectorBehaviour().getAreaMaterial(myNumber).color = Color.yellow;
+            SelectedBehaviour.getSelectedBehaviour().addSelectedSector(this);
         }
 
         public void OnSelectEnd()
         {
-            SectorBehaviour.getSectorBehaviour().getAreaMaterial(myNumber).color = getColor();
+            SelectedBehaviour.getSelectedBehaviour().removeSelectedSector(this);
         }
 
-        public Color getColor()
-        {
-            return Color.blue;
+        public void setLastIntel()
+        { 
+
+           if (previousKnowIntel != null && !previousKnowIntel.isKnown && !lastKnownIntels.isKnown)
+                return;
+
+            if (!lastKnownIntels.isKnown)
+            {
+                Color cl = Color.black;
+                cl.a = 0.7f;
+                SectorBehaviour.getSectorBehaviour().getAreaMaterial(myNumber).color = cl;
+                SectorBehaviour.getSectorBehaviour().getBorderMaterial(myNumber).color = Color.clear;
+                gm.SetActive(false);
+                return;
+            }
+
+            gm.SetActive(true);
+            SectorBehaviour.getSectorBehaviour().getAreaMaterial(myNumber).color = lastKnownIntels.landColor;
+            SectorBehaviour.getSectorBehaviour().getBorderMaterial(myNumber).color = lastKnownIntels.borderColor;
+            
+            setVisualizationDelay(lastKnownIntels.infoDelay);
+
         }
     }
 }

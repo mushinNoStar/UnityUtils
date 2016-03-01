@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
+using Networking;
 
 namespace Actions
 {
     public class ActionManager
     {
-        private static bool isServer = true;
         
         /// <summary>
         /// apply the rule, if it cannot be called, it's dropped.
@@ -15,8 +15,10 @@ namespace Actions
         /// <param name="otherParam"></param>
         public static void callRule(string RuleName, int callerId, List<int> targetsId, List<string> otherParam)
         {
-            if (isServer)
+            if (Server.getServer().isServer()) //if i'm the server, bypass every controll.
                 executeRule(RuleName, callerId, targetsId, otherParam);
+            else //else send this to the server.
+                Server.getServer().sendActionRequest(RuleName, callerId, targetsId, otherParam);
         }
 
         /// <summary>
@@ -77,7 +79,7 @@ namespace Actions
 
         }
 
-        private static void executeRule(string RuleName, int callerId, List<int> targetsId, List<string> otherParam)
+        public static void executeRule(string RuleName, int callerId, List<int> targetsId, List<string> otherParam)
         {
             Actor act = Actor.getActorByID(callerId);
             if (act == null)

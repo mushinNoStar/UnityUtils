@@ -3,42 +3,104 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using UnityEngine;
 using ceometric;
+using Actions;
 
 namespace Game
 {
-    public class Sector : IVertex
+    public class Sector : Target, IVertex
     {
-        public readonly string name;
-        public readonly Vector2 position;
+        private string name;
+        private Vector2 position;
         public readonly Galaxy galaxy;
         private List<Sector> neighbours = new List<Sector>();
         private List<Connection> connections = new List<Connection>();
+        private Nation owner = null;
 
         public Vector2 get2dPosition()
         {
             return position;
         }
 
-        public Sector (Galaxy gal, Vector2 pos, string nm)
+        public Sector(List<string> data, int id) : base(data, id) { }
+
+        public Sector (Galaxy gal, Vector2 pos, string nm) : base()
         {
             name = nm;
             position = pos;
             galaxy = gal;
         }
-        
-        public void setNeighbours(List<Sector> sectors)
+
+        public string getName()
         {
-            neighbours = sectors;
+            return name;
         }
 
-        public void setConnection(List<Connection> connection)
+        public override List<string> serialize()
         {
-            connections = connection;
+            List<string> diRitorno = base.serialize();
+
+            diRitorno.Add(name);
+            diRitorno.Add(position.x+"");
+            diRitorno.Add(position.y+"");
+            if (owner != null)
+                diRitorno.Add(owner.getName());
+            else
+                diRitorno.Add("");
+
+            return diRitorno;
+        }
+
+        public override void deserialize(List<string> data)
+        {
+            base.deserialize(data);
+            name = data[0];
+            data.RemoveAt(0);
+            position = new Vector2(float.Parse(data[0]), float.Parse(data[1]));
+            data.RemoveAt(0);
+            data.RemoveAt(0);
+            if (data[0].Length != 0)
+                owner = Nation.getNation(data[0]);
+            else
+                owner = null;
+            data.RemoveAt(0);
+        }
+
+        public void addNeighbour(Sector sc)
+        {
+            neighbours.Add(sc);
+        }
+
+        public ReadOnlyCollection<Sector> getNeighbours()
+        {
+            return neighbours.AsReadOnly();
+        }
+
+        public void addConnection(Connection c)
+        {
+            connections.Add(c);
         }
 
         public ReadOnlyCollection<Connection> getConnections()
         {
             return connections.AsReadOnly();
+        }
+
+        public void setOwner(Nation nt)
+        {
+
+            if (owner != null)
+            {
+                Nation nr = owner;
+                owner = null;
+                nr.removeSector(this);
+            }
+            owner = nt;
+            changed();
+        }
+
+        public Nation getOwner()
+        {
+            return owner;
         }
 
         public void checkConsistency()

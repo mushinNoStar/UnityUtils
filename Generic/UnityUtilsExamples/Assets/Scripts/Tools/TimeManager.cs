@@ -5,6 +5,9 @@ namespace Tools
     public delegate void voidMehtod();
     public class TimeManager : MonoBehaviour
     {
+        /// <summary>
+        /// Subscribe to this to be notified once every tick.
+        /// </summary>
         public static event voidMehtod OnTick;
         private float f = 1;
         // Use this for initialization

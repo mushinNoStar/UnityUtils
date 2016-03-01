@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 
 public class CameraMovementManager : MonoBehaviour
@@ -10,13 +9,12 @@ public class CameraMovementManager : MonoBehaviour
     private Vector3 target;
     public static int locked = 0;
 
-    // Use this for initialization
     void Start()
     {
+        Camera.main.transparencySortMode = TransparencySortMode.Orthographic;
         target = transform.position;
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (locked > 0)
@@ -33,6 +31,5 @@ public class CameraMovementManager : MonoBehaviour
 
         target += new Vector3(0, 0, d * Mathf.Abs(transform.position.z));
         transform.position = Vector3.Lerp(transform.position, target, 3 * Time.deltaTime);
-
     }
 }

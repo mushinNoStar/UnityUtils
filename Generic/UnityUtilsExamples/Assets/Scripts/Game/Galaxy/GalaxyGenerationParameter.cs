@@ -10,7 +10,7 @@ namespace Game
         public int plusNumberOfStarInSector = 5;
         public int minusNumberOfStarInSector = 2;
 
-        public int galaxyEdge = 20;
+        public int galaxyEdge = 30;
         public float connectionsWidth = 0.03f;
         public float areasEdgeWidth = 0.02f;
 
