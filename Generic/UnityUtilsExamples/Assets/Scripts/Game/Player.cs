@@ -1,7 +1,7 @@
 ﻿using Actions;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-
+using System;
 
 namespace Game
 {
@@ -19,7 +19,6 @@ namespace Game
         {
             name = nm;
             players.Add(this);
-            changed();
         }
 
         public Nation getObservingNation()
@@ -30,33 +29,6 @@ namespace Game
         public void setObservinNation(Nation nat)
         {
             observingNation = nat;
-            changed();
-        }
-
-        public Player(List<string> data, int id) : base (data, id)
-        {
-            players.Add(this);
-        }
-
-        public override List<string> serialize()
-        {
-            List<string> diRitorno = base.serialize();
-            diRitorno.Add(name);
-            if (observingNation != null)
-                diRitorno.Add(observingNation.getName());
-            else
-                diRitorno.Add("");
-            return diRitorno;
-        }
-
-        public override void deserialize(List<string> data)
-        {
-            base.deserialize(data);
-            name = data[0];
-            data.RemoveAt(0);
-            if (data[0].Length != 0)
-                observingNation = Nation.getNation(data[0]);
-            data.RemoveAt(0);
         }
 
         public string getName()
@@ -75,6 +47,31 @@ namespace Game
         public static ReadOnlyCollection<Player> getPlayers()
         {
             return players.AsReadOnly();
+        }
+
+        [Serializable]
+        public class SerializablePlayer
+        {
+            public string name;
+            public int nationID = -1;
+
+            public SerializablePlayer()
+            {}
+
+            public SerializablePlayer(Player pl)
+            {
+                name = pl.name;
+                if (pl.observingNation != null)
+                    nationID = Nation.getNations().IndexOf(pl.getObservingNation());
+                else
+                    nationID = -1;
+            }
+
+            public void setUpPlayer(Player pl)
+            {
+                if (nationID != -1)
+                    pl.observingNation = Nation.getNations()[nationID];
+            }
         }
     }
 }

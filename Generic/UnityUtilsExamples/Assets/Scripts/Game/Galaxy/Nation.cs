@@ -1,6 +1,7 @@
 ﻿using Actions;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 namespace Game
 {
@@ -8,13 +9,12 @@ namespace Game
     {
         private string name = "";
         private static Dictionary<string, Nation> everyNation = new Dictionary<string, Nation>();
-        private Galaxy gal;
+        public readonly Galaxy galaxy;
         public int connectionLevel = 0;
         private List<Sector> ownedSectors = new List<Sector>();
         private List<Sector> knowSectors = new List<Sector>();
         private Color color;
-
-        public Nation(List<string> data, int id) : base (data, id) { }
+        public List<Fleet> fleets = new List<Fleet>();
 
         public Nation(string nm, Galaxy gal, Color col) : base()
         {
@@ -22,55 +22,33 @@ namespace Game
             color.a = 0.4f;
             name = nm;
             everyNation.Add(name, this);
+            galaxy = gal;
         }
 
-        public override List<string> serialize()
+        public void addFleet(Fleet fl)
         {
-            List<string> dRitorno = base.serialize();
-            dRitorno.Add(name);
-            dRitorno.Add(connectionLevel+"");
-            dRitorno.Add(color.r+"");
-            dRitorno.Add(color.b+"");
-            dRitorno.Add(color.g+"");
-            dRitorno.Add(color.a+"");
-
-            foreach (Sector sc in knowSectors)
-                dRitorno.Add(sc.getId()+"");
-            dRitorno.Add("#");
-            foreach (Sector sc in ownedSectors)
-                dRitorno.Add(sc.getId()+"");
-            dRitorno.Add("#");
-
-            return dRitorno;
+            fleets.Add(fl);
         }
 
-        public override void deserialize(List<string> data)
+        public void removeFleet(Fleet fl)
         {
-            ownedSectors.Clear();
-            knowSectors.Clear();
-            base.deserialize(data);
-            name = data[0];
-            data.RemoveAt(0);
-            connectionLevel = int.Parse(data[0]);
-            data.RemoveAt(0);
-            color = new Color(float.Parse(data[0]), float.Parse(data[1]), float.Parse(data[2]), float.Parse(data[3]));
-            data.RemoveAt(0);
-            data.RemoveAt(0);
-            data.RemoveAt(0);
-            data.RemoveAt(0);
+            fleets.Remove(fl);
+        }
 
-            while (data[0] != "#")
-            {
-                knowSectors.Add((Sector)getTargetByID(int.Parse(data[0])));
-                data.RemoveAt(0);
-            }
-            data.RemoveAt(0);
+        public void tick()
+        {
+            foreach (Fleet f in fleets)
+                f.executeJump();
+        }
 
-            while (data[0] != "#")
+        public static List<Nation> getNations()
+        {
+            List<Nation> nat = new List<Nation>();
+            foreach (Nation nt in everyNation.Values)
             {
-                ownedSectors.Add((Sector)getTargetByID(int.Parse(data[0])));
-                data.RemoveAt(0);
+                nat.Add(nt);
             }
+            return nat;
         }
 
         public bool ownsSector(Sector sc)
@@ -93,7 +71,6 @@ namespace Game
             if (!knowSectors.Contains(sc))
             {
                 knowSectors.Add(sc);
-                changed();
             }
         }
 
@@ -106,7 +83,6 @@ namespace Game
                 addKnownSector(r);
             sc.setOwner(this);
             ownedSectors.Add(sc);
-            changed();
         }
 
         public void removeSector(Sector sc)
@@ -115,7 +91,6 @@ namespace Game
             {
                 sc.setOwner(null);
                 ownedSectors.Remove(sc);
-                changed();
             }
         }
 
@@ -128,7 +103,6 @@ namespace Game
         {
             everyNation.Remove(name);
             everyNation.Add(name, this);
-            changed();
         }
 
         /// <summary>
@@ -158,5 +132,56 @@ namespace Game
             return 10;
         }
 
+        public void checkConsistency()
+        {
+            foreach (Sector sc in ownedSectors)
+                if (sc.getOwner() != this)
+                    throw new Exception("nation owns and not owns sector");
+        }
+
+        [Serializable]
+        public class SerializableNation
+        {
+            public int connectionLevel = 0;
+            public float[] color;
+            public List<int> knownSectors = new List<int>();
+            public List<int> ownedSectors = new List<int>();
+            public List<Fleet.SerializableFleet> fleets = new List<Fleet.SerializableFleet>();
+            public string name;
+
+            public SerializableNation() { }
+
+            public SerializableNation(Nation nt)
+            {
+                name = nt.name;
+                connectionLevel = nt.connectionLevel;
+                foreach (Sector sc in nt.knowSectors)
+                {
+                   
+                    knownSectors.Add(nt.galaxy.getSectors().IndexOf(sc));
+                }
+                foreach (Sector sc in nt.ownedSectors)
+                    ownedSectors.Add(nt.galaxy.getSectors().IndexOf(sc));
+                color = new float[] {nt.color.r, nt.color.g, nt.color.b, nt.color.a};
+
+                foreach (Fleet fl in nt.fleets)
+                    fleets.Add(new Fleet.SerializableFleet(fl));
+
+            }
+
+            public void setUpNation(Nation n)
+            {
+                n.connectionLevel = connectionLevel;
+                foreach (int i in knownSectors)
+                    n.addKnownSector(n.galaxy.getSectors()[i]);
+                foreach (int i in ownedSectors)
+                    n.setOwnedSector(n.galaxy.getSectors()[i]);
+                foreach (Fleet.SerializableFleet fl in fleets)
+                {
+                    Fleet f = new Fleet(n.galaxy.getSectors()[fl.sector].getSubSectors()[fl.subSector], n, fl.lineShip);
+                    fl.setUpFleet(f);
+                }
+            }
+        }
     }
 }

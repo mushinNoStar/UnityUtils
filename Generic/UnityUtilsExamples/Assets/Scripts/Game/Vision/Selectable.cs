@@ -19,6 +19,7 @@ namespace Vision
             selectable.OnSelectStart();
         }
 
+
         public static void addSelected(ISelectable selectable)
         {
             selected.Add(selectable);
@@ -36,6 +37,14 @@ namespace Vision
         {
             return selected.AsReadOnly();
         }
+        
+        public static void addTarget(object ogg)
+        {
+            foreach (ISelectable sel in selected)
+            {
+                sel.reciveTarget(ogg);
+            }
+        }
     }
 
     /// <summary>
@@ -46,5 +55,8 @@ namespace Vision
     {
         void OnSelectStart();
         void OnSelectEnd();
+        bool selectionPersingTroughScenes();
+        void reciveTarget(object ogg);
+
     }
 }

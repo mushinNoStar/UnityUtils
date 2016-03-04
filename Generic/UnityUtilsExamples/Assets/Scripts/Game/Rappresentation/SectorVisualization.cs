@@ -5,6 +5,7 @@ using UnityEngine;
 using Vision;
 using ceometric;
 using UnityEngine.UI;
+using System;
 
 namespace Game
 {
@@ -24,6 +25,7 @@ namespace Game
         private SectorClone previousKnowIntel;
         private SectorClone lastKnownIntels;
         private GameObject gm;
+        public List<SubSpaceVisualization> subSectorVisualization = new List<SubSpaceVisualization>();
 
         public SectorVisualization(Sector targetSector, Player observingPlayer) : base()
         {
@@ -32,8 +34,11 @@ namespace Game
             gm.GetComponent<Text>().text = targetSector.getName();
             gm.GetComponent<RectTransform>().anchoredPosition3D = targetSector.get2dPosition() + new Vector2(0,0.2f);
             gm.GetComponent<RectTransform>().sizeDelta = new Vector3(1.4f, 0.4f);
+           
+           
 
-            sector = targetSector; //generate the extremes of this sector
+
+                sector = targetSector; //generate the extremes of this sector
             vis.Add(this);
             generateExtremes();
 
@@ -43,6 +48,11 @@ namespace Game
             lastKnownIntels = new SectorClone(sector,observingPlayer);
             previousKnowIntel = null;
             setLastIntel();
+
+            foreach (SubSector sbs in sector.getSubSectors())
+            {
+                subSectorVisualization.Add(new SubSpaceVisualization(sbs, observingPlayer));
+            }
         }
 
         /// <summary>
@@ -51,21 +61,32 @@ namespace Game
         /// <param name="num"></param>
         private void clicked(int num, bool shift, int mouseButton)
         {
-            if (!lastKnownIntels.isKnown)
+            if (!lastKnownIntels.isKnown || myNumber != num)
                 return;
-
             if (mouseButton == 0)
             {
                 if (shift)
                 {
-                    if (myNumber == num && isVisible())
+                    if (isVisible())
                         SelectionManger.addSelected(this);
                 }
                 else
                 {
-                    if (myNumber == num && isVisible())
-                        SelectionManger.select(this);
+                    if (isVisible())
+                    { 
+                            SelectionManger.select(this);
+                    }
                 }
+            }
+            else
+            {
+                SectorScene.sectorInspected = this;
+                Game.getGame().getRappresentation().setScene(Scene.getScene("SectorScene"));
+                CameraMovementManager.target = sector.get2dPosition();
+                CameraMovementManager.target -= new Vector3(0, 0, 1);
+
+                Camera.main.transform.position = sector.get2dPosition();
+                Camera.main.transform.position -= new Vector3(0, 0, 1);
             }
         }
 
@@ -100,6 +121,11 @@ namespace Game
             return visisble;
         }
 
+        public bool selectionPersingTroughScenes()
+        {
+            return false;
+        }
+
         /// <summary>
         /// this sets the visualization visible. this has nothing to do with the visibility rules
         /// this is related to the scene managment.
@@ -112,7 +138,7 @@ namespace Game
             SectorBehaviour.getSectorBehaviour().getBorderMaterial(myNumber).color = Color.clear;
             visisble = true;
             setLastIntel();
-            
+
         }
 
         /// <summary>
@@ -120,6 +146,7 @@ namespace Game
         /// </summary>
         public override void update()
         {
+            
             previousKnowIntel = lastKnownIntels;
             lastKnownIntels = new SectorClone(sector, Game.getGame().getRappresentation().getObservingPlayer());
             setLastIntel();
@@ -206,7 +233,8 @@ namespace Game
         }
 
         public void setLastIntel()
-        { 
+        {
+           
 
            if (previousKnowIntel != null && !previousKnowIntel.isKnown && !lastKnownIntels.isKnown)
                 return;
@@ -227,6 +255,11 @@ namespace Game
             
             setVisualizationDelay(lastKnownIntels.infoDelay);
 
+        }
+
+        public void reciveTarget(object ogg)
+        {
+           
         }
     }
 }

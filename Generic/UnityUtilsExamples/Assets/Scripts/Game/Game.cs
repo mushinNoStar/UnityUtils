@@ -18,12 +18,17 @@ namespace Game
 
         private Game()
         {
-            
+
         }
 
         public bool isStarted()
         {
             return started;
+        }
+
+        public void save(string path)
+        {
+            galaxy.save(path);
         }
 
         /// <summary>
@@ -40,43 +45,23 @@ namespace Game
         /// </summary>
         /// <param name="path"></param>
         public void start(string path)
-        { 
-            if (!Networking.Server.getServer().isServer()) //if i'm not the server
-            {
-                if (Networking.Server.getServer().gameStarted()) //then if the game starteted in the server
-                {
-                    askForStructuralData(); //ask for every possible data
-                    Networking.Server.getServer().askForAll(); 
-                }
-                else //wait for the game to start
-                    Debug.Log("Game did not started in the server yet, wait for his call");
-                return;
-            }
-            else //but if i'm not the server
-            {
-                if (path.Length == 0)
-                {
-                    GalaxyGenerationParameter param = new GalaxyGenerationParameter();
-                    generateNewGalaxy(param);
+        {
 
-                    Networking.Server srv = Networking.Server.getServer();
-                    if (srv.serverStarted()) //if i'm the server
-                    {
-                        Debug.Log("sent structure");
-                        srv.sendAllStructuralData(); //then allert every player that he should start.
-                    }
-                    galaxy.generateGalaxyData(param);
-                }
-                else
-                {
-                    throw new System.Exception("not implemented");
-                    //loadStructure(path);
-                    //loadGalaxyData(path);
-                }
+            if (path.Length == 0)
+            {
+                GalaxyGenerationParameter param = new GalaxyGenerationParameter();
+                generateNewGalaxy(param);
+
+                galaxy.generateGalaxyData();
             }
+            else
+            {
+                galaxy.load(path);
+            }
+
 
             rappresentation = new Rappresentation(galaxy); //then set up the rappresentation
-            
+
             started = true;
         }
 
@@ -93,20 +78,12 @@ namespace Game
                     x = Random.value * param.galaxyEdge - (param.galaxyEdge / 2);
                     y = Random.value * param.galaxyEdge - (param.galaxyEdge / 2);
                 }
-                verts.Add(new Vector2(x,y));
+                verts.Add(new Vector2(x, y));
                 names.Add(Tools.Utils.randomName());
             }
-            galaxy.generateStructure(verts, names);
-            
-            
-        }
+            galaxy.generateStructure(verts, names, param);
 
-        public void askForStructuralData()
-        {
-            Networking.Server.getServer().askStructuralData();
-            List<Vector2> pos = Networking.Server.getServer().getSectorsPostion();
-            List<string> names = Networking.Server.getServer().getSectorNames();
-            galaxy.generateStructure(pos, names);
+
         }
 
         public static Game getGame()
@@ -119,6 +96,11 @@ namespace Game
         public void checkConsistency()
         {
             galaxy.checkConsistency();
+        }
+
+        public void tick()
+        {
+            galaxy.tick();
         }
     }
 }

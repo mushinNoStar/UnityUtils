@@ -6,7 +6,7 @@ public class CameraMovementManager : MonoBehaviour
 
     public List<KeyCode> keys;
     public List<Vector3> direction;
-    private Vector3 target;
+    public static Vector3 target;
     public static int locked = 0;
 
     void Start()
@@ -26,7 +26,7 @@ public class CameraMovementManager : MonoBehaviour
         var d = Input.GetAxis("Mouse ScrollWheel");
         if (d < 0 && target.z < -300)
             target = new Vector3(target.x, target.y, -300);
-        if (d > 0 && target.z > -1)
+        if (d > 0 && target.z > -0.2f)
             target = new Vector3(target.x, target.y, -1);
 
         target += new Vector3(0, 0, d * Mathf.Abs(transform.position.z));

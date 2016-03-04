@@ -16,6 +16,8 @@ namespace Game
 
             foreach (ConnectionVisualization con in ConnectionVisualization.getVisualization())
                 con.hide();
+            NiceFeatures.setGalaxyFeatureActive(false);
+
         }
 
         /// <summary>
@@ -27,11 +29,13 @@ namespace Game
                 vis.show();
             foreach (ConnectionVisualization con in ConnectionVisualization.getVisualization())
                 con.show();
+
+            NiceFeatures.setGalaxyFeatureActive(true);
         }
 
         public override void tick()
         {
-            
+           
         }
     }
 }

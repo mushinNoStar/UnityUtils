@@ -234,11 +234,22 @@ namespace Game
                 shift = true;
 
             int rightClick = 0;
-            if (Input.GetMouseButtonDown(2))
-                rightClick = 2;
+            
 
             if (OnClicked != null)
                 OnClicked(getMeshOver(), shift, rightClick);
+        }
+
+        public void OnMouseOver()
+        {
+            if (!Input.GetMouseButtonDown(1))
+                return;
+            bool shift = false;
+            if (Input.GetKey(KeyCode.LeftShift))
+                shift = true;
+            if (OnClicked != null)
+                OnClicked(getMeshOver(), shift, 2);
+           
         }
 
         private int getMeshOver()

@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
 using System;
-using Networking;
-
 namespace Actions
 {
-    public class Actor : Syncronizable
+    public class Actor
     {
         private static Dictionary<string, Type> actorType = null;
         private static Dictionary<int, Actor> existingActors = new Dictionary<int, Actor>();
@@ -13,40 +11,12 @@ namespace Actions
         private List<Action> enabledActions = new List<Action>();
         private int myID = -1;
 
-        public Actor(List<string> data, int id) : base(data, id)
-        {
-            existingActors.Add(nextId, this);
-        }
-
-        public Actor() : base()
+        public Actor()
         {
             existingActors.Add(nextId, this);
             myID = nextId;
             nextId++;
             enabledActions = Action.getDefaultEnabledActions(this);
-        }
-
-        public override List<string> serialize()
-        {
-            List<string> diRitorno = base.serialize();
-            diRitorno.Add(myID+"");
-            foreach (Action act in enabledActions)
-                diRitorno.Add(act.getName()+"");
-            diRitorno.Add("#");
-            return diRitorno;
-        }
-
-        public override void deserialize(List<string> data)
-        {
-            base.deserialize(data);
-            myID = int.Parse(data[0]);
-            data.RemoveAt(0);
-            while (data[0] != "#")
-            {
-                enabledActions.Add(Action.getAction(data[0]));
-                data.RemoveAt(0);
-            }
-            data.RemoveAt(0);
         }
 
         public int getId()
@@ -123,8 +93,6 @@ namespace Actions
         public void addEnabledAction(Action act)
         {
             enabledActions.Add(act);
-            changed();
-
         }
 
         /// <summary>
@@ -134,8 +102,6 @@ namespace Actions
         public void removeEnabledAction(Action act)
         {
             enabledActions.Remove(act);
-            changed();
-
         }
     }
 }

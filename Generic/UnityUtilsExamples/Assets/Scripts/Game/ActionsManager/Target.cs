@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
 using System;
-using Networking;
 
 namespace Actions
 {
-    public class Target : Syncronizable
+    public class Target
     {
         private static Dictionary<string, Type> targetTypes = null;
         private static Dictionary<int, Target> existingTargets = new Dictionary<int, Target>();
@@ -21,49 +20,6 @@ namespace Actions
             myID = nextId;
             nextId++;
             allowedActions = Action.getDefaultAllowedActions(this);
-        }
-
-        public Target(List<string> data, int id) : base(data, id)
-        {
-            existingTargets.Add(nextId, this);
-        }
-
-        public override List<string> serialize()
-        {
-            List<string> diRitorno = base.serialize();
-            diRitorno.Add(myID + "");
-            foreach (Action act in allowedActions)
-                diRitorno.Add(act.getName() + "");
-            diRitorno.Add("#");
-            for (int a = 0; a < forbiddenActors.Count; a++)
-            {
-                diRitorno.Add(forbiddenActors[a].getId()+"");
-                diRitorno.Add(forbiddenActions[a].getName());
-            }
-            diRitorno.Add("#");
-
-            return diRitorno;
-        }
-
-        public override void deserialize(List<string> data)
-        {
-            base.deserialize(data);
-            myID = int.Parse(data[0]);
-            data.RemoveAt(0);
-            while (data[0] != "#")
-            {
-                allowedActions.Add(Action.getAction(data[0]));
-                data.RemoveAt(0);
-            }
-            data.RemoveAt(0);
-            while (data[0] != "#")
-            {
-                forbiddenActors.Add(Actor.getActorByID(int.Parse(data[0])));
-                data.RemoveAt(0);
-                forbiddenActions.Add(Action.getAction(data[0]));
-                data.RemoveAt(0);
-            }
-            data.RemoveAt(0);
         }
 
         /// <summary>
@@ -107,7 +63,6 @@ namespace Actions
         {
             forbiddenActions.Add(action);
             forbiddenActors.Add(act);
-            changed();
         }
 
         /// <summary>
@@ -123,7 +78,6 @@ namespace Actions
                 {
                     forbiddenActions.RemoveAt(a);
                     forbiddenActors.RemoveAt(a);
-                    changed();
 
                     return;
                 }
@@ -171,8 +125,6 @@ namespace Actions
         public void addEnabledAction(Action act)
         {
             allowedActions.Add(act);
-            changed();
-
         }
         /// <summary>
         /// remove a particular action from the list of action that can interact with this target.
@@ -181,8 +133,6 @@ namespace Actions
         public void removeEnabledAction(Action act)
         {
             allowedActions.Remove(act);
-            changed();
-
         }
     }
 }

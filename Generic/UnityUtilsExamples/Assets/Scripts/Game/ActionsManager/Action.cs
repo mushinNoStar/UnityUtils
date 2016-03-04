@@ -166,7 +166,7 @@ namespace Actions
 
         protected Action()
         {
-            Action.allActions.Add(actionName, this);
+            Action.allActions.Add(GetType().Name, this);
             actionName = GetType().Name;
         }
 
@@ -190,7 +190,7 @@ namespace Actions
             {
                 foreach (var type in asm.GetTypes())
                 {
-                    if (type.BaseType == typeof(Action))
+                    if (type.IsSubclassOf( typeof(Action)))
                         listOfType.Add(type);
                 }
             }

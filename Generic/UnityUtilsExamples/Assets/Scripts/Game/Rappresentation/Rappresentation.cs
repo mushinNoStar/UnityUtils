@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using Vision;
+using System.Collections.ObjectModel;
 
 namespace Game
 {
@@ -16,16 +18,13 @@ namespace Game
         public Rappresentation(Galaxy gal)
         {
             galaxy = gal;
-            if (Networking.Server.getServer().isServer()) //if it is the server generates the obeserver player, else it look for it.
-            {
-                currentPlayerProspective = new Player("Observer");
-                currentPlayerProspective.setObservinNation(Nation.getNation("Humans"));
-            }
-            else
-                currentPlayerProspective = Player.getPlayer("Observer");
+            
+            currentPlayerProspective = new Player("Observer");
+            currentPlayerProspective.setObservinNation(Nation.getNation("Humans"));
+           
 
             buildVisualizationOf(gal);
-            Tools.TimeManager.OnTick += tick;
+            Tools.TimeManager.subscribe( tick);
             setScene(Scene.getScene("GalaxyScene"));
         }
 
@@ -49,7 +48,9 @@ namespace Game
         /// <param name="newScene"></param>
         public void setScene(Scene newScene)
         {
-            Vision.SelectionManger.setSelectNull();
+            ReadOnlyCollection<ISelectable> sel = SelectionManger.getCurrentSelected();
+            if (sel.Count == 0 || !sel[0].selectionPersingTroughScenes())
+                SelectionManger.setSelectNull();
             if (currentScene != null)
                 currentScene.OnEnd();
             currentScene = newScene;
@@ -61,7 +62,9 @@ namespace Game
         /// </summary>
         public void setScene()
         {
-            Vision.SelectionManger.setSelectNull();
+            ReadOnlyCollection<ISelectable> sel = SelectionManger.getCurrentSelected();
+            if (sel.Count == 0 || !sel[0].selectionPersingTroughScenes())
+                SelectionManger.setSelectNull();
             if (currentScene != null)
                 currentScene.OnEnd();
             currentScene = null;
@@ -71,6 +74,11 @@ namespace Game
         {
             if (currentScene != null)
                 currentScene.tick();
+        }
+
+        public Scene getCurrentScene()
+        {
+            return currentScene;
         }
 
         /// <summary>

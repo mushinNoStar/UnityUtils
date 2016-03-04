@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class ParticlesSystem : MonoBehaviour {
-    private bool started = false;
+    public bool started = false;
     private float timer = 1000;
 	// Use this for initialization
 	void Start () {
@@ -15,8 +15,10 @@ public class ParticlesSystem : MonoBehaviour {
         timer -= Time.deltaTime;
         if (timer < 0)
             started = false;
+
         if (started)
             return;
+
         if (Game.Game.getGame().getRappresentation() != null)
         {
             ParticleSystem prs = GetComponent<ParticleSystem>();
@@ -34,8 +36,9 @@ public class ParticlesSystem : MonoBehaviour {
             prs.startLifetime = 1000;
             prs.startSize = 0.1f;
             prs.SetParticles(paricles.ToArray(), paricles.Count);
+            timer = 1000;
+            started = true;
         }
-        timer = 1000;
-        started = true;
+       
 	}
 }

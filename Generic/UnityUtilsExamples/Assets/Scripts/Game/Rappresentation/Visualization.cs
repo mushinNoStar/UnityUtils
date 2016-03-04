@@ -7,7 +7,7 @@
 
         public Visualization()
         {
-            Tools.TimeManager.OnTick += tick;
+            Tools.TimeManager.subscribe( tick);
         }
 
         /// <summary>

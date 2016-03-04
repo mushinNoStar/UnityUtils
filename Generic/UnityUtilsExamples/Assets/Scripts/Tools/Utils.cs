@@ -214,10 +214,26 @@ namespace Tools
             return (v1.y - v2.y) / (v1.x - v2.x);
         }
 
+        public static T randomFromList<T>(List<T> list)
+        {
+            int t = Mathf.FloorToInt((list.Count-1 )* UnityEngine.Random.value);
+
+           // while (t >= list.Count)
+             //   t = Mathf.FloorToInt(list.Count * UnityEngine.Random.value);
+
+            T ogg = list[t];
+            return ogg;
+        }
+
         public static float getSlope(IVertex v1, IVertex v2)
         {
             return (v1.get2dPosition().y - v2.get2dPosition().y) / (v1.get2dPosition().x - v2.get2dPosition().x);
         }
-    
+        
+
+        public static Color randomColor()
+        {
+            return new Color(UnityEngine.Random.value, UnityEngine.Random.value, UnityEngine.Random.value, 0.4f);
+        }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Networking;
 
 namespace Actions
 {
@@ -15,10 +14,10 @@ namespace Actions
         /// <param name="otherParam"></param>
         public static void callRule(string RuleName, int callerId, List<int> targetsId, List<string> otherParam)
         {
-            if (Server.getServer().isServer()) //if i'm the server, bypass every controll.
-                executeRule(RuleName, callerId, targetsId, otherParam);
-            else //else send this to the server.
-                Server.getServer().sendActionRequest(RuleName, callerId, targetsId, otherParam);
+            //if (Server.getServer().isServer()) //if i'm the server, bypass every controll.
+            executeRule(RuleName, callerId, targetsId, otherParam);
+            //else //else send this to the server.
+              //  Server.getServer().sendActionRequest(RuleName, callerId, targetsId, otherParam);
         }
 
         /// <summary>
